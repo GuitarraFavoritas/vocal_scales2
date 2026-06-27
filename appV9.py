@@ -34,8 +34,8 @@ import streamlit as st
 # Inicializar conexión a Supabase usando st.secrets (lo configuraremos en Streamlit Cloud)
 @st.cache_resource
 def init_connection():
-    url = st.secrets["https://efzwcvhpooiqzjsbxvht.supabase.co/rest/v1/"]
-    key = st.secrets["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmendjdmhwb29pcXpqc2J4dmh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1ODM2MjEsImV4cCI6MjA5ODE1OTYyMX0.VXY5OdAtB7_Qglvxyzs_fd_Ij7AMg566sc7hg_oBTtg"]
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
 
 supabase_client: Client = init_connection()
