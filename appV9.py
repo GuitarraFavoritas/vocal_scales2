@@ -61,16 +61,35 @@ def load_db():
         else:
             data = {}
     except Exception as e:
-        st.error(f"Error al cargar la base de datos: {e}")
+        st.error(f"Error al conectar con la base de datos: {e}")
         data = {}
 
-    # Lógica de seguridad por si le faltan llaves
-    if "playlists" not in data: data["playlists"] = ["Archivar"]
-    if "Archivar" not in data["playlists"]: data["playlists"].insert(0, "Archivar")
-    if "last_selected_filter" not in data: data["last_selected_filter"] = "Todas"
-    if "last_selected_exercise" not in data: 
-        data["last_selected_exercise"] = list(data.get("exercises", {}).keys())[0] if data.get("exercises") else ""
+    # --- LÓGICA DE SEGURIDAD MEJORADA ---
+    # 1. Asegurar que las llaves principales siempre existan
+    if "exercises" not in data: 
+        data["exercises"] = {}
+    if "playlists" not in data: 
+        data["playlists"] = ["Archivar"]
+        
+    if "Archivar" not in data["playlists"]: 
+        data["playlists"].insert(0, "Archivar")
+        
+    if "last_selected_filter" not in data: 
+        data["last_selected_filter"] = "Todas"
 
+    # 2. Si la base de datos está totalmente vacía, crear un ejercicio por defecto para que la app no colapse
+    if not data["exercises"]:
+        data["exercises"]["Ejercicio de Prueba"] = {
+            "pattern": "1, 2, 3, 2, 1", 
+            "settings": dict(DEFAULT_SETTINGS), 
+            "playlists": []
+        }
+
+    # 3. Asegurar el último ejercicio seleccionado
+    if "last_selected_exercise" not in data or data["last_selected_exercise"] not in data["exercises"]: 
+        data["last_selected_exercise"] = list(data["exercises"].keys())[0]
+
+    # 4. Asegurar que todos los ejercicios tengan sus configuraciones
     for k, v in data.get("exercises", {}).items():
         if "settings" not in v: v["settings"] = dict(DEFAULT_SETTINGS)
         if "playlists" not in v: v["playlists"] = []
