@@ -365,29 +365,46 @@ if st.button("Generar MIDI"):
     else: roots = roots_up
 
     time = 0
-    for beat in range(4):
-        mf.addNote(1, channel_drums, woodblock, time+beat, 0.5, metronome_vol)
+    
+    # 1. Cuenta regresiva (4 tiempos en silencio de piano, solo avanza el tiempo)
     time += 4
 
+    # 2. Generar todas las notas del piano
     for i, root in enumerate(roots):
         scale = build_major_scale(root)
         for idx, (degree, length, accidental) in enumerate(pattern_notes, start=1):
             note_num = scale[degree-1] + accidental
             mf.addNote(0, 0, note_num, time, length, notes_vol)
-            for b in range(int(length)):
-                mf.addNote(1, channel_drums, woodblock, time+b, 0.5, metronome_vol)
-            time += length
+            time += length # Avanzar el tiempo según dure la nota
 
+        # Puente entre escalas
         if i < len(roots)-1:
             next_root = roots[i+1]
             mf.addNote(0, 0, next_root, time, bridge, notes_vol)
-            for b in range(bridge): mf.addNote(1, channel_drums, woodblock, time+b, 0.5, metronome_vol)
             time += bridge
 
+    # 3. Acorde final
     final_scale = build_major_scale(low_midi)
     for degree,_,_ in pattern_notes:
         mf.addNote(0, 0, final_scale[degree-1], time, 4, final_chord_vol)
-    for b in range(4): mf.addNote(1, channel_drums, woodblock, time+b, 0.5, metronome_vol)
+    
+    # Sumar los 4 tiempos del acorde final al contador total
+    time += 4 
+
+    # =========================================================
+    # 4. NUEVO METRÓNOMO GLOBAL (Independiente de las notas)
+    # =========================================================
+    # Ponemos un golpe exacto en cada tiempo (beat) desde el 0 hasta el final de la pista.
+    
+    for beat in range(int(time)):
+        mf.addNote(1, channel_drums, woodblock, beat, 0.5, metronome_vol)
+
+    # (Opcional - Si quieres que el primer tiempo del compás suene distinto/más fuerte):
+    # for beat in range(int(time)):
+    #     if beat % 4 == 0:  # Primer golpe de cada compás de 4/4
+    #         mf.addNote(1, channel_drums, 76, beat, 0.5, metronome_vol + 10) # High Woodblock
+    #     else:
+    #         mf.addNote(1, channel_drums, 77, beat, 0.5, metronome_vol)      # Low Woodblock
 
     with open(file_name, "wb") as f: mf.writeFile(f)
     st.success(f"✅ {file_name}")
