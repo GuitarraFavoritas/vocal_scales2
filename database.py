@@ -2,9 +2,6 @@ import os
 import streamlit as st
 from supabase import create_client, Client
 
-if "db_version" not in st.session_state:
-    st.session_state.db_version = 0
-
 DEFAULT_SETTINGS = {
     "range_low": "A2", "range_high": "C5", "direction": "ascend_descend",
     "bpm": 200, "bridge": 4, "metronome_vol": 80, "notes_vol": 127, "final_chord_vol": 85
@@ -56,9 +53,11 @@ def load_db_cached(version):
     return data
 
 def load_db():
+    st.session_state.setdefault("db_version", 0)
     return load_db_cached(st.session_state.db_version)
 
 def save_db(data):
+    st.session_state.setdefault("db_version", 0)
     try:
         supabase_client.table("app_state").update({"data": data}).eq("id", 1).execute()
         st.session_state.db_version += 1 
